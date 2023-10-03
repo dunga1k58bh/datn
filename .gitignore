@@ -1,7 +1,3 @@
 src/Api/bin
 src/Client/bin
 src/IdentityServer/bin
-
-src/Api/obj/Debug
-src/Client/obj/Debug
-src/IdentityServer/obj/Debug
