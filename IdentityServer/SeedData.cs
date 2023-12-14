@@ -9,6 +9,12 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
 using IdentityServer4.EntityFramework.Storage;
 using Serilog;
+using System.Security.Claims;
+using IdentityServer.Data;
+using IdentityServer.Models;
+using System;
+using IdentityModel;
+using Microsoft.AspNetCore.Identity;
 
 namespace IdentityServer
 {
@@ -17,6 +23,15 @@ namespace IdentityServer
         public static void EnsureSeedData(string connectionString)
         {
             var services = new ServiceCollection();
+            services.AddLogging();
+
+            services.AddDbContext<ApplicationDbContext>(options =>
+               options.UseSqlServer(connectionString));
+
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
+
             services.AddOperationalDbContext(options =>
             {
                 options.ConfigureDbContext = db => db.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(typeof(SeedData).Assembly.FullName));
@@ -33,9 +48,16 @@ namespace IdentityServer
                 scope.ServiceProvider.GetService<PersistedGrantDbContext>().Database.Migrate();
 
                 var context = scope.ServiceProvider.GetService<ConfigurationDbContext>();
-                context.Database.Migrate();
-                EnsureSeedData(context);
+                // context.Database.Migrate();
+                // EnsureSeedData(context);
+
+                var userDbContext = scope.ServiceProvider.GetService<ApplicationDbContext>();
+                userDbContext.Database.Migrate();
+
+                EnsureSeedUserData(userDbContext, scope);
             }
+
+
         }
 
         private static void EnsureSeedData(ConfigurationDbContext context)
@@ -81,6 +103,79 @@ namespace IdentityServer
             else
             {
                 Log.Debug("ApiScopes already populated");
+            }
+        }
+
+
+        private static void EnsureSeedUserData(ApplicationDbContext context, IServiceScope scope)
+        {
+
+            var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+            //Hard code
+            var alice = userMgr.FindByNameAsync("alice").Result;
+            if (alice == null)
+            {
+                alice = new ApplicationUser
+                {
+                    UserName = "alice",
+                    Email = "AliceSmith@email.com",
+                    EmailConfirmed = true,
+                };
+                var result = userMgr.CreateAsync(alice, "Pass123$").Result;
+                if (!result.Succeeded)
+                {
+                    throw new Exception(result.Errors.First().Description);
+                }
+
+                result = userMgr.AddClaimsAsync(alice, new Claim[]{
+                    new Claim(JwtClaimTypes.Name, "Alice Smith"),
+                    new Claim(JwtClaimTypes.GivenName, "Alice"),
+                    new Claim(JwtClaimTypes.FamilyName, "Smith"),
+                    new Claim(JwtClaimTypes.WebSite, "http://alice.com"),
+                }).Result;
+                if (!result.Succeeded)
+                {
+                    throw new Exception(result.Errors.First().Description);
+                }
+                Log.Debug("alice created");
+            }
+            else
+            {
+                Log.Debug("alice already exists");
+            }
+
+            var bob = userMgr.FindByNameAsync("bob").Result;
+            if (bob == null)
+            {
+                bob = new ApplicationUser
+                {
+                    UserName = "bob",
+                    Email = "BobSmith@email.com",
+                    EmailConfirmed = true
+                };
+                var result = userMgr.CreateAsync(bob, "Pass123$").Result;
+                if (!result.Succeeded)
+                {
+                    throw new Exception(result.Errors.First().Description);
+                }
+
+                result = userMgr.AddClaimsAsync(bob, new Claim[]{
+                    new Claim(JwtClaimTypes.Name, "Bob Smith"),
+                    new Claim(JwtClaimTypes.GivenName, "Bob"),
+                    new Claim(JwtClaimTypes.FamilyName, "Smith"),
+                    new Claim(JwtClaimTypes.WebSite, "http://bob.com"),
+                    new Claim("location", "somewhere")
+                }).Result;
+                if (!result.Succeeded)
+                {
+                    throw new Exception(result.Errors.First().Description);
+                }
+                Log.Debug("bob created");
+            }
+            else
+            {
+                Log.Debug("bob already exists");
             }
         }
     }
