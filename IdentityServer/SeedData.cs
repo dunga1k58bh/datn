@@ -45,6 +45,7 @@ namespace IdentityServer
                 Log.Debug("Clients being populated");
                 foreach (var client in Config.Clients.ToList())
                 {
+                    Log.Information("Logging an object: {@MyObject}", client);
                     context.Clients.Add(client.ToEntity());
                 }
                 context.SaveChanges();
