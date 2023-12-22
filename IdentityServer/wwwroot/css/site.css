@@ -1,24 +1,72 @@
-﻿.body-container {
-  margin-top: 60px;
-  padding-bottom: 40px; }
+.body-container {
+	margin-top: 60px;
+	padding-bottom: 40px;
+}
+
+.item-selected{
+  background-color: #f7f7fb;
+}
+
+.form-group .control-label {
+	font-weight: 500;
+}
 
 .welcome-page li {
-  list-style: none;
-  padding: 4px; }
+	list-style: none;
+	padding: 4px;
+}
 
 .logged-out-page iframe {
-  display: none;
-  width: 0;
-  height: 0; }
+	display: none;
+	width: 0;
+	height: 0;
+}
 
 .grants-page .card {
-  margin-top: 20px;
-  border-bottom: 1px solid lightgray; }
-  .grants-page .card .card-title {
-    font-size: 120%;
-    font-weight: bold; }
-    .grants-page .card .card-title img {
-      width: 100px;
-      height: 100px; }
-  .grants-page .card label {
-    font-weight: bold; }
+	margin-top: 20px;
+	border-bottom: 1px solid lightgray;
+}
+
+.grants-page .card .card-title {
+	font-size: 120%;
+	font-weight: bold;
+}
+
+.grants-page .card .card-title img {
+	width: 100px;
+	height: 100px;
+}
+
+.grants-page .card label {
+	font-weight: bold;
+}
+
+.page-container {
+	display: flex;
+  margin-bottom: 100px;
+}
+
+.page-container .master-menu {
+	width: 220px;
+	padding: 16px;
+	background-color: #f6f6f6;
+}
+
+.page-container .master-menu li:hover {
+	background-color: #eee;
+}
+
+.page-container .master-menu li a {
+	padding: 8px 16px;
+	font-weight: 500;
+	text-decoration: none;
+	color: #666;
+}
+
+.page-container .page-body {
+	height: calc(100vh - 59px);
+	margin: auto;
+	width: 1000px;
+	margin-top: 20px;
+	margin-bottom: 100px;
+}

@@ -1,0 +1,61 @@
+@model ClientDetailsViewModel
+
+<h2>Application detail</h2>
+
+<ul class="nav nav-tabs">
+    <li class="nav-item">
+        <a class="nav-link active" id="general-info-tab" data-toggle="tab" href="#general-info">General Info</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="sso-tab" data-toggle="tab" href="#sso">SSO</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="roles-tab" data-toggle="tab" href="#roles">User Groups</a>
+    </li>
+</ul>
+
+<form asp-action="Details" method="post">
+    <input type="hidden" asp-for="Client.Id" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="tab-content mt-2">
+        <!-- General Info Tab -->
+        <div class="tab-pane fade show active" id="general-info">
+            <h4>Application information</h4>
+
+            <div class='form-group'>
+                <label asp-for='Client.ClientName' class='control-label'>Application label</label>
+                <input asp-for='Client.ClientName' class='form-control' />
+                <span asp-validation-for='Client.ClientName' class='text-danger'></span>
+            </div>
+
+            <div class='form-group'>
+                <label asp-for='Client.Description' class='control-label'>Description</label>
+                <textarea asp-for="Client.Description" class="form-control"></textarea>
+                <span asp-validation-for='Client.Description' class='text-danger'></span>
+            </div>
+
+            <div class='form-group'>
+                <label asp-for='Client.LogoUri' class='control-label'>Logo</label>
+                <input asp-for='Client.LogoUri' type='file' class='form-control-file' />
+                <span asp-validation-for='Client.LogoUri' class='text-danger'></span>
+            </div>
+        </div>
+
+        <!-- SSO Tab -->
+        <div class="tab-pane fade" id="sso">
+            <partial name='_SSOTab'model="@Model" />
+        </div>
+
+        <!-- Roles Tab -->
+        <div class="tab-pane fade" id="roles">
+            <partial name='_RoleTab' model="@Model" />
+        </div>
+    </div>
+
+    <div class="form-group text-right">
+        <a asp-action="Index" class="mr-2">Back </a>
+        <input type="submit" value="Save" class="btn btn-primary" />
+    </div>
+
+</form>

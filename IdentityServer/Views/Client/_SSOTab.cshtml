@@ -1,0 +1,116 @@
+@model ClientDetailsViewModel
+
+<h4 class="mt-2">OpenID Connect Configuration</h4>
+<div>To learn more about this configuration, including restricting access to specific users, please visit</div>
+<a href='https://jumpcloud.com/support/sso-with-oidc'>Single Sign On (SSO) with OpenID Connect (OIDC).</a>
+
+<h4 class="mt-2">Endpoint Configuration</h4>
+
+<div class="form-group">
+    <label class='control-label'>Grant type</label>
+    <div class="form-check">
+        <input asp-for="Client.AllowOfflineAccess" class="form-check-input" />
+        <label asp-for="Client.AllowOfflineAccess" class="form-check-label">Refresh token</label>
+    </div>
+    <span asp-validation-for="Client.AllowOfflineAccess" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="Client.ClientId" class="control-label">Client ID</label>
+    <div class="input-group">
+        <input asp-for="Client.ClientId" class="form-control" readonly />
+        <div class="input-group-append">
+            <button type="button" class="btn btn-secondary" onclick="copyToClipboard()">Copy</button>
+        </div>
+    </div>
+    <span asp-validation-for="Client.ClientId" class="text-danger"></span>
+    <p class="text-muted">The client secret of the application registered in the third-party OIDC identity provider.</p>
+</div>
+
+<div class="alert alert-success" role="alert" id="copySuccessAlert" style="display: none;">
+    Copied successfully!
+</div>
+
+<div class="form-group">
+    <label asp-for="RedirectUris" class="control-label">Redirect URIs</label>
+    
+    <div id="redirectUriContainer">
+       @for (var i = 0; i < Model.RedirectUris.Count; i++)
+        {
+            <div class="input-group mt-1">
+                <input asp-for="RedirectUris[i]" class="form-control" placeholder="Enter Redirect URI" />
+                @if (i > 0)
+                {
+                    <div class="input-group-append">
+                        <button type="button" class="btn btn-danger" onclick="removeRedirectField(@i)">Remove</button>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <button type="button" class="btn btn-primary mt-2" onclick="addRedirectField()">Add Redirect URI</button>
+</div>
+
+<h4 class="mt-2">Attribute Mapping (optional)</h4>
+<div>If attributes are required by either, this Service Provider or the selected scopes for SSO authentication, they are not editable. Additional attributes may be included in assertions, although support for each attribute will vary for each Service Provider.</div>
+
+
+<h4 class="mt-2">User Consent</h4>
+<div>This application defaults to automatically consenting on behalf of users. Users will not be prompted to provide consent.</div>
+
+
+<script>
+    function copyToClipboard() {
+        var inputField = document.getElementById('Client_ClientId');
+        inputField.select();
+        document.execCommand('copy');
+
+        // Show the success message
+        var successAlert = document.getElementById('copySuccessAlert');
+        successAlert.style.display = 'block';
+
+        // Hide the success message after a few seconds (e.g., 3 seconds)
+        setTimeout(function () {
+            successAlert.style.display = 'none';
+        }, 3000);
+    }
+    
+    function addRedirectField() {
+        var container = document.getElementById('redirectUriContainer');
+        var newIndex = container.children.length;
+
+        var inputGroup = document.createElement('div');
+        inputGroup.className = 'input-group mt-1';
+
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'form-control';
+        input.placeholder = 'Enter Redirect URI';
+        input.name = 'RedirectUris[' + newIndex + ']';
+        input.value = 'https://'
+
+        var buttonAppend = document.createElement('div');
+        buttonAppend.className = 'input-group-append';
+
+        var removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'btn btn-danger';
+        removeButton.innerHTML = 'Remove';
+        removeButton.addEventListener('click', function() {
+            removeRedirectField(newIndex);
+        });
+
+        buttonAppend.appendChild(removeButton);
+        inputGroup.appendChild(input);
+        inputGroup.appendChild(buttonAppend);
+
+        container.appendChild(inputGroup);
+    }
+
+    function removeRedirectField(index) {
+        var container = document.getElementById('redirectUriContainer');
+        var removedElement = container.children[index];
+        container.removeChild(removedElement);
+    }
+</script>

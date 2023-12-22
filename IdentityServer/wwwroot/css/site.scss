@@ -3,6 +3,12 @@
     padding-bottom:40px;
 }
 
+.form-group{
+    .control-label{
+        font-weight: 500;
+    }
+}
+
 .welcome-page {
     li {
         list-style: none;
@@ -36,6 +42,39 @@
         label {
             font-weight: bold;
         }
+    }
+}
+
+
+.page-container{
+    display: flex;
+
+    .master-menu{
+        width: 220px;
+        padding: 16px;
+        background-color: #f6f6f6;
+
+        li{
+
+            &:hover{
+                background-color: #eee;
+            }
+
+            a{
+                padding: 8px 16px;
+                font-weight: 500;
+                text-decoration: none;
+                color: #666;
+            }
+        } 
+    }
+
+    .page-body{
+        height: calc(100vh - 59px);
+        margin: auto;
+        width: 1000px;
+        margin-top: 20px;
+        margin-bottom: 100px;
     }
 }
 

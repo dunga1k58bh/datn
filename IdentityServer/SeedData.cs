@@ -45,22 +45,18 @@ namespace IdentityServer
 
             using (var scope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {
-                scope.ServiceProvider.GetService<PersistedGrantDbContext>().Database.Migrate();
 
-                var context = scope.ServiceProvider.GetService<ConfigurationDbContext>();
-                // context.Database.Migrate();
-                // EnsureSeedData(context);
+                var context = scope.ServiceProvider.GetService<ApplicationDbContext>();
+                context.Database.Migrate();
+                EnsureSeedData(context);
 
-                var userDbContext = scope.ServiceProvider.GetService<ApplicationDbContext>();
-                userDbContext.Database.Migrate();
-
-                EnsureSeedUserData(userDbContext, scope);
+                EnsureSeedUserData(context, scope);
             }
 
 
         }
 
-        private static void EnsureSeedData(ConfigurationDbContext context)
+        private static void EnsureSeedData(ApplicationDbContext context)
         {
             if (!context.Clients.Any())
             {

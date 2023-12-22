@@ -5,28 +5,14 @@
 }
 
 <div class="welcome-page">
-    <h1>
-        <img src="~/icon.jpg">
-        Welcome to IdentityServer4
-        <small class="text-muted">(version @version)</small>
-    </h1>
+    <h1>Welcome to the Home Page</h1>
+    <p class="lead">Choose your destination:</p>
 
-    <ul>
-        <li>
-            IdentityServer publishes a
-            <a href="~/.well-known/openid-configuration">discovery document</a>
-            where you can find metadata and links to all the endpoints, key material, etc.
-        </li>
-        <li>
-            Click <a href="~/diagnostics">here</a> to see the claims for your current session.
-        </li>
-        <li>
-            Click <a href="~/grants">here</a> to manage your stored grants.
-        </li>
-        <li>
-            Here are links to the
-            <a href="https://github.com/identityserver/IdentityServer4">source code repository</a>,
-            and <a href="https://github.com/IdentityServer/IdentityServer4/tree/main/samples">ready to use samples</a>.
-        </li>
-    </ul>
+    <div class="mb-3">
+        <a href="/diagnostics" class="btn btn-primary btn-lg">Go to Admin Site</a>
+    </div>
+
+    <div>
+        <a href="/portal" class="btn btn-success btn-lg">Go to Portal</a>
+    </div>
 </div>

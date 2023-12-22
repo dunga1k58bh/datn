@@ -1,0 +1,51 @@
+@model ClientDetailsViewModel
+
+<div>
+    <!-- Render Roles list here -->
+    <h3>Roles</h3>
+
+    <div class="row">
+        <div class="col-md-1">
+        </div>
+        <div class="col-md-4">
+            <h5>Name</h5>
+        </div>
+        <div class="col-md-4">
+            <h5>Description</h5>
+        </div>
+    </div>
+
+    @foreach (var role in Model.Roles)
+    {
+        <div class="row js-role-item mb-1 py-3 @(Model.RoleIds.Contains(role.Id) ? "bg-success" : "")">
+            <div class="col-md-1">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="RoleIds" value="@role.Id" 
+                        @(Model.RoleIds.Contains(role.Id) ? "checked" : "") id="role_@role.Id" />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div>@role.Name</div>
+            </div>
+            <div class="col-md-4">
+                <div>@role.Description</div>
+            </div>
+        </div>
+    }
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        $('input[type="checkbox"]').change(function () {
+            var roleId = $(this).val();
+            var isChecked = $(this).prop('checked');
+            
+            if (isChecked) {
+                $(this).closest('.js-role-item').addClass('item-selected');
+            } else {
+                $(this).closest('.js-role-item').removeClass('item-selected');
+            }
+        });
+    });
+</script>
