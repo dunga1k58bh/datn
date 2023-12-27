@@ -75,6 +75,28 @@ namespace IdentityServer
                             IdentityServerConstants.StandardScopes.Profile,
                             "api1"
                         }
+                },
+                new Client
+                {
+                    ClientId = "notes",
+                    ClientSecrets = { new Secret("49C1A7E1-0C79-4A89-A3D6-AACEFAWDAWD".Sha256()) },
+
+                    AllowedGrantTypes = GrantTypes.Code,
+
+                    // where to redirect to after login
+                    RedirectUris = { "https://localhost:7247/signin-oidc" },
+
+                    AllowOfflineAccess = true,
+
+                    // where to redirect to after logout
+                    PostLogoutRedirectUris = { "https://localhost:7247/signout-callback-oidc" },
+
+                    AllowedScopes = new List<string>
+                        {
+                            IdentityServerConstants.StandardScopes.OpenId,
+                            IdentityServerConstants.StandardScopes.Profile,
+                            "api1"
+                        }
                 }
             };
     }

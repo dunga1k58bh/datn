@@ -91,6 +91,7 @@ public class ClientController : Controller
                 // Update the properties of the existing client
                 existingClient.ClientName = vm.Client.ClientName;
                 existingClient.Description = vm.Client.Description;
+                existingClient.ClientUri = vm.Client.ClientUri;
 
                 if (vmClient.AllowOfflineAccess){
                     existingClient.AllowOfflineAccess = true;

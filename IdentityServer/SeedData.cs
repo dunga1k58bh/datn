@@ -15,6 +15,7 @@ using IdentityServer.Models;
 using System;
 using IdentityModel;
 using Microsoft.AspNetCore.Identity;
+using IdentityServer4.EntityFramework.Entities;
 
 namespace IdentityServer
 {
@@ -58,48 +59,44 @@ namespace IdentityServer
 
         private static void EnsureSeedData(ApplicationDbContext context)
         {
-            if (!context.Clients.Any())
-            {
-                Log.Debug("Clients being populated");
-                foreach (var client in Config.Clients.ToList())
-                {
-                    Log.Information("Logging an object: {@MyObject}", client);
-                    context.Clients.Add(client.ToEntity());
-                }
-                context.SaveChanges();
-            }
-            else
-            {
-                Log.Debug("Clients already populated");
-            }
 
-            if (!context.IdentityResources.Any())
+            Log.Debug("Clients being populated");
+            foreach (var client in Config.Clients.ToList())
             {
-                Log.Debug("IdentityResources being populated");
-                foreach (var resource in Config.IdentityResources.ToList())
-                {
-                    context.IdentityResources.Add(resource.ToEntity());
+                Log.Information("Logging an object: {@MyObject}", client);
+                var a = context.Clients.FirstOrDefault(i => i.ClientId == client.ClientId);
+                if(a != null){
+                    continue;
                 }
-                context.SaveChanges();
+                context.Clients.Add(client.ToEntity());
             }
-            else
-            {
-                Log.Debug("IdentityResources already populated");
-            }
+            context.SaveChanges();
 
-            if (!context.ApiResources.Any())
+            Log.Debug("IdentityResources being populated");
+            foreach (var resource in Config.IdentityResources.ToList())
             {
-                Log.Debug("ApiScopes being populated");
-                foreach (var resource in Config.ApiScopes.ToList())
-                {
-                    context.ApiScopes.Add(resource.ToEntity());
+                var a = context.IdentityResources.FirstOrDefault(i => i.Name == resource.Name);
+                if(a != null){
+                    continue;
                 }
-                context.SaveChanges();
+
+                context.IdentityResources.Add(resource.ToEntity());
             }
-            else
+            context.SaveChanges();
+        
+
+            Log.Debug("ApiScopes being populated");
+            foreach (var resource in Config.ApiScopes.ToList())
             {
-                Log.Debug("ApiScopes already populated");
+
+                var existApiScope = context.ApiScopes.FirstOrDefault(i => i.Name == resource.Name);
+                if(existApiScope != null){
+                    continue;
+                }
+
+                context.ApiScopes.Add(resource.ToEntity());
             }
+            context.SaveChanges();
         }
 
 

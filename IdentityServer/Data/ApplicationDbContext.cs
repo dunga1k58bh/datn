@@ -15,7 +15,7 @@ namespace IdentityServer.Data
         public DbSet<ClientGrantType> ClientGrantTypes {get; set; }
         public DbSet<ClientIdPRestriction> ClientIdPRestrictions {get; set; }
         public DbSet<ClientPostLogoutRedirectUri> ClientPostLogoutRedirectUris {get; set; }
-        public DbSet<ClientProperty> ClientPropertys {get; set; }
+        public DbSet<ClientProperty> ClientProperties {get; set; }
         public DbSet<ClientRedirectUri> ClientRedirectUris {get; set; }
         public DbSet<ClientScope> ClientScopes {get; set; }
         public DbSet<ClientSecret> ClientSecrets {get; set; }
@@ -23,7 +23,7 @@ namespace IdentityServer.Data
         //Api scope table
         public DbSet<ApiResource> ApiResources {get; set; }
         public DbSet<ApiResourceClaim> ApiResourceClaims {get; set; }
-        public DbSet<ApiResourceProperty> ApiResourcePropertys {get; set; }
+        public DbSet<ApiResourceProperty> ApiResourceProperties {get; set; }
         public DbSet<ApiResourceScope> ApiResourceScopes {get; set; }
         public DbSet<ApiResourceSecret> ApiResourceSecrets {get; set; }
         public DbSet<ApiScope> ApiScopes {get; set; }
@@ -33,7 +33,7 @@ namespace IdentityServer.Data
         //Pr
         public DbSet<IdentityResource> IdentityResources {get; set; }
         public DbSet<IdentityResourceClaim> IdentityResourceClaims {get; set; }
-        public DbSet<IdentityResourceProperty> IdentityResourcePropertys {get; set; }
+        public DbSet<IdentityResourceProperty> IdentityResourceProperties {get; set; }
         public DbSet<PersistedGrant> PersistedGrants {get; set; }
 
         //Custom model

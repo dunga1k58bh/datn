@@ -43,17 +43,24 @@
 
 .page-container {
 	display: flex;
-  margin-bottom: 100px;
+  	margin-bottom: 100px;
+	background-color: #f9fafb;
 }
 
 .page-container .master-menu {
 	width: 220px;
-	padding: 16px;
-	background-color: #f6f6f6;
+	padding: 16px 4px 32px 4px;
+	background-color: #fff;
+}
+
+
+.page-container .master-menu li{
+	margin-bottom: 4px;
+	border-radius: 999px;
 }
 
 .page-container .master-menu li:hover {
-	background-color: #eee;
+	background-color: #f0f8ff;
 }
 
 .page-container .master-menu li a {
@@ -69,4 +76,63 @@
 	width: 1000px;
 	margin-top: 20px;
 	margin-bottom: 100px;
+}
+
+
+.page-container .page-body .page-section{
+	background-color: #fff;
+    border: 1px solid #e3e8e9;
+    border-radius: 5px;
+    padding: 24px;
+}
+
+.application-list{
+	display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+
+.application-list .item{
+	position: relative;
+    background-color: #f9fafb;
+    border: 1px solid #e3e8e9;
+    border-radius: 3px;
+    height: 100%;
+    margin: 12px;
+    min-width: 8.8em;
+    text-align: center;
+    text-decoration: none;
+    transition: all .3s ease-in-out;
+    width: 18%;
+	font-size: 14px;
+}
+
+.application-list .item:hover{
+	box-shadow: 0 0 12px 0 #c9cccf;
+    transform: scale(1.03);
+}
+
+.application-list .item .name{
+	font-size: 14px;
+	width: 150px;
+	font-weight: 500;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.application-list .item .icon{
+	border-radius: 50%;
+    display: inline-block;
+    font-size: 32px;
+    font-weight: Bold;
+    height: 67.2px;
+    line-height: 38px;
+    margin: 23px;
+    padding: 15px;
+    transition: all .1s ease-in-out;
+    width: 68.8px;
+	color: #fff;
+	background-color: #006cac;
 }
