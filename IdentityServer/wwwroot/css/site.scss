@@ -9,7 +9,7 @@
     }
 }
 
-.welcome-page {
+.welcome-page{
     li {
         list-style: none;
         padding: 4px;
@@ -51,8 +51,7 @@
 
     .master-menu{
         width: 220px;
-        padding: 16px;
-        background-color: #f6f6f6;
+        padding: 16px 4px;
 
         li{
 
@@ -70,12 +69,14 @@
     }
 
     .page-body{
-        height: calc(100vh - 59px);
-        margin: auto;
-        width: 1000px;
-        margin-top: 20px;
-        margin-bottom: 100px;
+        height: 100%;
+        flex: 1;
+        padding: 0 16px;
     }
 }
 
+@import 'layout/layout.scss';
+@import 'account/layout.scss';
+@import 'portal/layout.scss';
+@import 'admin/layout.scss';
 

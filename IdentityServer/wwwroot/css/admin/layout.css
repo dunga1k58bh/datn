@@ -1,0 +1,7 @@
+.admin-container {
+  height: calc(100% - 56px);
+  background-color: #f9fafb;
+}
+.admin-container .page-body .page-section {
+  padding: 20px 40px;
+}/*# sourceMappingURL=layout.css.map */

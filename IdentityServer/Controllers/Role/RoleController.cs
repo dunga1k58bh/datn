@@ -1,17 +1,26 @@
+using IdentityServer.Data;
 using IdentityServer.Models;
+using IdentityServerHost.Quickstart.UI;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 [Route("roles")]
+[SecurityHeaders]
+[Authorize]
 public class RoleController : Controller
 {
     private readonly RoleManager<ApplicationRole> _roleManager;
+    private readonly ApplicationDbContext _context;
 
-    public RoleController(RoleManager<ApplicationRole> roleManager)
+    public RoleController(RoleManager<ApplicationRole> roleManager, ApplicationDbContext context)
     {
         _roleManager = roleManager;
+        _context = context;
     }
 
     // GET: Role
@@ -143,14 +152,35 @@ public class RoleController : Controller
         }
 
         var role = await _roleManager.FindByIdAsync(id);
-        if (role == null)
-        {
-            return NotFound();
-        }
+        var userIds = GetUsersForRole(role.Id).Select(user => user.Id).ToList();
+        var allUsers = _context.Users.ToList();
 
-        return View(role);
+        var vm = new RoleDetailsViewModel{
+            Role = role,
+            UserIds = userIds,
+            Users = allUsers,
+        };
+
+        return View(vm);
     }
 
+    private List<ApplicationUser> GetUsersForRole(string roleId)
+    {
+        // Assuming you have a DbSet<RoleClientGrant> in your ApplicationDbContext
+        var userRoles = _context.UserRoles
+            .Where(rcg => rcg.RoleId == roleId)
+            .ToList();
+
+        // Extract the role IDs from the RoleClientGrants
+        var userIds = userRoles.Select(rcg => rcg.UserId).ToList();
+
+        // Retrieve the roles based on the extracted role IDs
+        var users = _context.Users
+            .Where(u => userIds.Contains(u.Id))
+            .ToList();
+
+        return users;
+    }
 
     
 }

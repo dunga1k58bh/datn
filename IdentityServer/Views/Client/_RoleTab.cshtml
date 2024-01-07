@@ -17,7 +17,7 @@
 
     @foreach (var role in Model.Roles)
     {
-        <div class="row js-role-item mb-1 py-3 @(Model.RoleIds.Contains(role.Id) ? "item-selected" : "")">
+        <div class="row js-item mb-1 py-3 @(Model.RoleIds.Contains(role.Id) ? "item-selected" : "")">
             <div class="col-md-1">
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" name="RoleIds" value="@role.Id" 
@@ -34,18 +34,4 @@
     }
 </div>
 
-
-<script>
-    $(document).ready(function () {
-        $('input[type="checkbox"]').change(function () {
-            var roleId = $(this).val();
-            var isChecked = $(this).prop('checked');
-            
-            if (isChecked) {
-                $(this).closest('.js-role-item').addClass('item-selected');
-            } else {
-                $(this).closest('.js-role-item').removeClass('item-selected');
-            }
-        });
-    });
-</script>
+<script src="~/js/table/table.js"></script>

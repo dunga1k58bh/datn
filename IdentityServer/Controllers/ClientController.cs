@@ -1,14 +1,22 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using IdentityServer.Data;
 using IdentityServer.Models;
 using IdentityServer4.EntityFramework.Entities;
+using IdentityServer4.Models;
+using IdentityServerHost.Quickstart.UI;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 
 [Route("clients")]
+[SecurityHeaders]
+[Authorize]
 public class ClientController : Controller
 {
     private readonly ApplicationDbContext _context;
@@ -33,7 +41,14 @@ public class ClientController : Controller
             return NotFound();
         }
 
-        var client = _context.Clients.Include(c => c.RedirectUris).FirstOrDefault(c => c.Id == id);
+        var client = _context.Clients.FirstOrDefault(c => c.Id == id);
+
+        if (client != null)
+        {
+            _context.Entry(client).Collection(c => c.RedirectUris).Load();
+            _context.Entry(client).Collection(c => c.ClientSecrets).Load();
+        }
+
         var roleIds = GetRolesForClient(client.Id).Select(role => role.Id).ToList();
         var redirectUris = client.RedirectUris.Select(uri => uri.RedirectUri).ToList();
         var allRoles = _context.Roles.ToList();
@@ -51,6 +66,39 @@ public class ClientController : Controller
 
         return View(vm);
     }
+
+
+    [Route("create")]
+    public IActionResult Create(){
+
+        var vm = new ClientCreateViewModel();
+        return View(vm);
+    }
+
+
+    [Route("create")]
+    [HttpPost]
+    public async Task<IActionResult> Create(ClientCreateViewModel vm){
+
+        if (ModelState.IsValid){
+
+            var clientId = GenerateClientId();
+            var client = new IdentityServer4.EntityFramework.Entities.Client{
+                ClientName = vm.ClientName,
+                Description = vm.ClientDescription,
+                ClientId = clientId
+            };
+
+            await _context.Clients.AddAsync(client);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index");
+        }
+        
+
+        return View(vm);
+    }
+
 
     private List<ApplicationRole> GetRolesForClient(int clientId)
     {
@@ -144,5 +192,87 @@ public class ClientController : Controller
 
         // If ModelState is not valid, return to the edit view with the ViewModel
         return View(vm);
+    }
+
+
+    static string GenerateClientId()
+    {
+        // You can customize the format and length of the client ID as needed
+        string prefix = "client_";
+        string randomPart = Guid.NewGuid().ToString("N").Substring(0, 8); // Using the first 8 characters of a GUID for randomness
+
+        return $"{prefix}{randomPart}";
+    }
+
+
+    static string generateClientSecret(){
+        const string characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~-";
+        const string format = "xxxxxxxxxxxxxxxxxxxxxxxxxxxx~xxxxxxxxxxxxGQ4x66oMYYeNSP-8";
+
+        StringBuilder result = new StringBuilder(format.Length);
+
+        Random random = new Random();
+
+        foreach (char c in format)
+        {
+            if (c == 'x')
+            {
+                result.Append(characters[random.Next(characters.Length)]);
+            }
+            else
+            {
+                result.Append(c);
+            }
+        }
+
+        return result.ToString();
+    }
+
+
+    [HttpPost]
+    [Route("generate-secret")]
+    public IActionResult RegenerateClientSecret(int ClientId)
+    {
+        // Assuming a method in your service to regenerate the client secret
+        var newClientSecret = generateClientSecret();
+        var Secret = new ClientSecret()
+        {
+            ClientId = ClientId,
+            Value = newClientSecret.Sha256()
+        };
+
+        _context.ClientSecrets.Add(Secret);
+        _context.SaveChanges();
+
+        // Returning the new client secret as JSON
+        return Json(new { ClientSecret = newClientSecret });
+    }
+
+
+    // GET: User/Delete/5
+    [Route("delete")]
+    public async Task<IActionResult> Delete(int id)
+    {
+
+        var client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == id);
+        if (client == null)
+        {
+            return NotFound();
+        }
+
+        return View(client);
+    }
+
+    // POST: User/Delete/5
+    [HttpPost, ActionName("Delete")]
+    [Route("delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteConfirmed(int id)
+    {
+        var client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == id);
+        _context.Clients.Remove(client);
+        _context.SaveChanges();
+        
+        return RedirectToAction(nameof(Index));
     }
 }

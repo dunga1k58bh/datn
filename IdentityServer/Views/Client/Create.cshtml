@@ -1,0 +1,27 @@
+@model ClientCreateViewModel
+
+
+<div class="page-section fs-14">
+    <h6>Create new application</h6>
+
+    <form asp-action="Create" method="post">
+
+        <div class='form-group'>
+            <label asp-for='ClientName' class='control-label'>Application label</label>
+            <input asp-for='ClientName' class='form-control' />
+            <span asp-validation-for='ClientName' class='text-danger'></span>
+        </div>
+
+        <div class='form-group'>
+            <label asp-for='ClientDescription' class='control-label'>Description</label>
+            <textarea asp-for="ClientDescription" class="form-control"></textarea>
+            <span asp-validation-for='ClientDescription' class='text-danger'></span>
+        </div>
+
+        <div class="form-group text-right">
+            <a asp-action="Index" class="mr-2">Back </a>
+            <input type="submit" value="Save" class="btn btn-primary" />
+        </div>
+
+    </form>
+</div>

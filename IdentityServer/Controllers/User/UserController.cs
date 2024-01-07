@@ -2,10 +2,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
-using IdentityServer.Models; // Replace with the actual namespace of your ApplicationUser
+using IdentityServer.Models;
 using System.Linq;
 using IdentityServer.Data;
 using System.Collections.Generic;
+using System.Security.Claims;
+using IdentityModel;
 
 
 [Route("users")]
@@ -23,31 +25,77 @@ public class UserController : Controller
         _roleManager = roleManager;
     }
 
-    // GET: User
-    public IActionResult Index()
+    // GET: Users list
+    public async Task<IActionResult> Index()
     {
-        var users = _userManager.Users;
-        return View(users);
+        var users = await _userManager.Users.ToListAsync();
+        var view_users = new List<UserWithClaimnsModel>();
+        foreach (var user in users){
+
+            var claims = await _userManager.GetClaimsAsync(user);
+            var nameClaim = claims.FirstOrDefault(c => c.Type == "name");
+            var name = nameClaim.Value;
+
+            var userWithClaimnsModel = new UserWithClaimnsModel(){
+                user = user,
+                Name = name
+            };
+
+
+            view_users.Add(userWithClaimnsModel);
+        }
+
+
+        var vm = new UserListViewModel(){
+            users = view_users
+        };
+
+        return View(vm);
     }
 
     // GET: User/Create
     [Route("create")]
     public IActionResult Create()
     {
-        return View();
+        var vm = new UserCreateViewModel();
+        return View(vm);
     }
 
     // POST: User/Create
     [Route("create")]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(ApplicationUser user)
+    public async Task<IActionResult> Create(UserCreateViewModel vm)
     {
         if (ModelState.IsValid)
         {
-            var result = await _userManager.CreateAsync(user);
+
+            var user = new ApplicationUser
+            {
+                UserName = vm.UserName,
+                Email = vm.Email,
+                // Additional user properties, if any
+            };
+
+            IdentityResult result;
+
+            if (vm.SetPassword){
+                result = await _userManager.CreateAsync(user, vm.Password);
+            } else {
+                result = await _userManager.CreateAsync(user, "Pass123$123456");
+            }
+
             if (result.Succeeded)
             {
+
+                var name = vm.FirstName + " " + vm.LastName;
+
+                await _userManager.AddClaimsAsync(user, new Claim[]{
+                    new Claim(JwtClaimTypes.Name, name),
+                    new Claim(JwtClaimTypes.GivenName, vm.FirstName),
+                    new Claim(JwtClaimTypes.FamilyName, vm.LastName),
+                });
+
                 return RedirectToAction(nameof(Index));
             }
 
@@ -57,7 +105,7 @@ public class UserController : Controller
             }
         }
 
-        return View(user);
+        return View(vm);
     }
 
     // GET: User/Edit/5
@@ -144,7 +192,7 @@ public class UserController : Controller
 
     [Route("details")]
     [HttpGet]
-    public async Task<IActionResult> Details(string? id){
+    public async Task<IActionResult> Details(string id){
 
         if (id == null)
         {

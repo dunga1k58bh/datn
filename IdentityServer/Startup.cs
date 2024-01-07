@@ -45,6 +45,7 @@ namespace IdentityServer
 
             var builder = services.AddIdentityServer(options =>
             {
+
                 options.Events.RaiseErrorEvents = true;
                 options.Events.RaiseInformationEvents = true;
                 options.Events.RaiseFailureEvents = true;
@@ -66,6 +67,13 @@ namespace IdentityServer
                         sql => sql.MigrationsAssembly(migrationsAssembly));
                 })
                 .AddAspNetIdentity<ApplicationUser>();
+
+            services.ConfigureApplicationCookie((obj) =>
+                {
+                    obj.LoginPath = "/a/login";
+                    obj.LogoutPath = "/a/logout";
+                    obj.AccessDeniedPath = "/Account/Error";
+                });
 
             // not recommended for production - you need to store your key material somewhere secure
             builder.AddDeveloperSigningCredential();

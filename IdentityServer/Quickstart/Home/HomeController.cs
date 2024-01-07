@@ -29,14 +29,14 @@ namespace IdentityServerHost.Quickstart.UI
 
         public IActionResult Index()
         {
-            if (_environment.IsDevelopment())
+
+            if (User.Identity.IsAuthenticated)
             {
-                // only show in development
-                return View();
+                return RedirectToAction("Index", "Portal");
             }
 
-            _logger.LogInformation("Homepage is disabled in production. Returning 404.");
-            return NotFound();
+            // If not authenticated, do nothing or return a different view
+            return View();
         }
 
         /// <summary>
