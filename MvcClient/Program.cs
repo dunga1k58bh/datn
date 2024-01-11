@@ -17,14 +17,14 @@ builder.Services.AddAuthentication(options =>
     {
          options.Authority = "https://localhost:5001";
 
-        options.ClientId = "mvc";
-        options.ClientSecret = "49C1A7E1-0C79-4A89-A3D6-A37998FB86B0";
+        options.ClientId = "client_1a0144e2";
+        options.ClientSecret = "Zz3bEBexcCy-nOVtpv4nWiQXtoVG~0ALVSs2yzgeNGQ4366oMYYeNSP-8";
         options.ResponseType = "code";
         options.GetClaimsFromUserInfoEndpoint = true;
         options.SaveTokens = true;
 
         options.Scope.Add("profile");
-        options.Scope.Add("api1");
+        options.Scope.Add("openid");
         options.Scope.Add("offline_access");
     });
 
