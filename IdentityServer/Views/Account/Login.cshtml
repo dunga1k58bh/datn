@@ -39,6 +39,22 @@
                             <partial name="_ValidationSummary" />
 
                             <button class="btn btn-primary btn-block btn-lg" name="button" value="login">Login</button>
+
+                            <div class="my-4 text-center">OR</div>
+                            @if (Model.VisibleExternalProviders.Any())
+                            {
+                                @foreach (var provider in Model.VisibleExternalProviders)
+                                {
+                
+                                    <a class="btn btn-outline-primary btn-block btn-lg"
+                                    asp-controller="External"
+                                    asp-action="Challenge"
+                                    asp-route-scheme="@provider.AuthenticationScheme"
+                                    asp-route-returnUrl="@Model.ReturnUrl">
+                                        <i class="bi bi-google mr-3"></i>@provider.DisplayName
+                                    </a>
+                                }
+                            }
                         </form>
                     </div>
                 </div>

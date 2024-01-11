@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using IdentityServer.Data;
 using IdentityServer.Models;
+using IdentityServer4;
 using IdentityServer4.EntityFramework.Entities;
 using IdentityServer4.Models;
 using IdentityServerHost.Quickstart.UI;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using NuGet.Packaging.Signing;
 
 
 [Route("clients")]
@@ -86,10 +88,34 @@ public class ClientController : Controller
             var client = new IdentityServer4.EntityFramework.Entities.Client{
                 ClientName = vm.ClientName,
                 Description = vm.ClientDescription,
-                ClientId = clientId
+                ClientId = clientId,
             };
 
             await _context.Clients.AddAsync(client);
+            await _context.SaveChangesAsync();
+
+            //Add client grant type default
+            var clientGrantType = new ClientGrantType{
+                ClientId = client.Id,
+                GrantType = GrantType.AuthorizationCode
+            };
+            await _context.ClientGrantTypes.AddAsync(clientGrantType);
+
+
+            //Add client default Scope
+            var openId = new ClientScope{
+                ClientId = client.Id,
+                Scope = IdentityServerConstants.StandardScopes.OpenId,
+            };
+
+            var profile = new ClientScope{
+                ClientId = client.Id,
+                Scope = IdentityServerConstants.StandardScopes.Profile,
+            };
+
+            await _context.ClientScopes.AddAsync(openId);
+            await _context.ClientScopes.AddAsync(profile);
+
             await _context.SaveChangesAsync();
 
             return RedirectToAction("Index");
@@ -140,11 +166,11 @@ public class ClientController : Controller
                 existingClient.ClientName = vm.Client.ClientName;
                 existingClient.Description = vm.Client.Description;
                 existingClient.ClientUri = vm.Client.ClientUri;
+                existingClient.Enabled = true;
 
                 if (vmClient.AllowOfflineAccess){
                     existingClient.AllowOfflineAccess = true;
                 }
-
                 
                 //Read RedirectUris
                 existingClient.RedirectUris.Clear();
