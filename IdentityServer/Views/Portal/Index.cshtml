@@ -1,0 +1,32 @@
+@model PortalViewModel
+
+<form class="form-inline my-3">
+    <div class="form-group">
+        <label for="searchInput" class="sr-only">Search</label>
+        <input type="text" class="form-control" id="searchInput" placeholder="Search...">
+    </div>
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+<div class = "page-section">
+    <h6>All applications</h6>
+
+    <div class="application-list ">
+        @foreach (var app in Model.Clients)
+        {  
+            <div class="item">
+                <a href="@app.ClientUri">
+                    <div class="body bg-white">
+                        <div class="icon">@app.ClientName[0]</div>
+                    </div>
+                </a>
+
+                <div class="footer d-flex justify-content-between p-2">
+                        <div class="name f-1">@app.ClientName</div>
+                        <a href=''>Details</a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+

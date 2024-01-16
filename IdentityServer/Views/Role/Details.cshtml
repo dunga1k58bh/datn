@@ -1,0 +1,39 @@
+@model RoleDetailsViewModel
+
+<form asp-action="Details" method="post">
+
+    <div class="page-header">
+        <h4>Group details</h4>
+        <div class="header-side">
+            <input type="submit" value="Save" class="btn btn-primary" />
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link active" id="general-info-tab" data-toggle="tab" href="#general-info">General Info</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="roles-tab" data-toggle="tab" href="#roles">User Groups</a>
+        </li>
+    </ul>
+
+
+    <input type="hidden" asp-for="Role.Id" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="tab-content mt-2">
+        <!-- General Info Tab -->
+        <div class="tab-pane fade show active" id="general-info">
+            <div class="page-section">
+                <partial name='_GeneralInfoTab' model="@Model" />
+            </div>
+        </div>
+
+        <!-- Roles Tab -->
+        <div class="tab-pane fade" id="roles">
+            <partial name='_UserTab' model="@Model" />
+        </div>
+    </div>
+</form>
+

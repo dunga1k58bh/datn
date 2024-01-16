@@ -2,6 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
+using System.Reflection;
+using IdentityServer.Data;
+using IdentityServer.Models;
+using IdentityServer4;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -9,10 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Reflection;
-
-using System.Linq;
-using IdentityServer4.EntityFramework.DbContexts;
+using Serilog;
 
 
 namespace IdentityServer
@@ -30,101 +31,98 @@ namespace IdentityServer
 
         public void ConfigureServices(IServiceCollection services)
         {
-            // uncomment, if you want to add an MVC-based UI
+
             services.AddControllersWithViews();
 
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            var connectionString = Configuration.GetConnectionString("DefaultConnection");
+            var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
-            services.AddIdentity<ApplicationUser, IdentityRole>((config =>
-                {
-                    config.SignIn.RequireConfirmedEmail = false;
-                }))
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(connectionString));
+
+            services.AddIdentity<ApplicationUser, ApplicationRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-            var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
-            var builder = services.AddIdentityServer()
-                .AddAspNetIdentity<ApplicationUser>() 
-                .AddDeveloperSigningCredential()        //This is for dev only scenarios when you don’t have a certificate to use.
+            var builder = services.AddIdentityServer(options =>
+            {
+
+                options.Events.RaiseErrorEvents = true;
+                options.Events.RaiseInformationEvents = true;
+                options.Events.RaiseFailureEvents = true;
+                options.Events.RaiseSuccessEvents = true;
+
+                // see https://identityserver4.readthedocs.io/en/latest/topics/resources.html
+                options.EmitStaticAudienceClaim = true;
+            })
+                
+                // this adds the config data from DB (clients, resources, CORS)
                 .AddConfigurationStore(options =>
-                    {
-                        options.ConfigureDbContext = b => b.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
-                            sql => sql.MigrationsAssembly(migrationsAssembly));
-                    }
-                )
+                {
+                    options.ConfigureDbContext = b => b.UseSqlServer(connectionString,
+                        sql => sql.MigrationsAssembly(migrationsAssembly));
+                })
                 .AddOperationalStore(options =>
-                    {
-                        options.ConfigureDbContext = b => b.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
-                            sql => sql.MigrationsAssembly(migrationsAssembly));
-                    }
-                )
-                .AddInMemoryClients(Config.Clients)
-                .AddInMemoryApiScopes(Config.ApiScopes)
-                .AddInMemoryIdentityResources(Config.IdentityResources);
-    
-            //Create superadmin
-            Seeder.SeedSuperAdmin(services).Wait();
+                {
+                    options.ConfigureDbContext = b => b.UseSqlServer(connectionString,
+                        sql => sql.MigrationsAssembly(migrationsAssembly));
+
+                    // this enables automatic token cleanup. this is optional.
+                    // options.EnableTokenCleanup = true;
+                    // options.TokenCleanupInterval = 30; // interval in seconds
+
+                })
+                .AddAspNetIdentity<ApplicationUser>();
+
+            services.ConfigureApplicationCookie((obj) =>
+                {
+                    obj.LoginPath = "/a/login";
+                    obj.LogoutPath = "/a/logout";
+                    obj.AccessDeniedPath = "/Account/Error";
+                });
+
+            // not recommended for production - you need to store your key material somewhere secure
+            builder.AddDeveloperSigningCredential();
+
+            services.AddAuthentication()
+            .AddGoogle(options =>
+            {
+                options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                options.ClientId = "26833223181-04jn7o50ha6a4qj88k635e9780gdp30k.apps.googleusercontent.com";
+                options.ClientSecret = "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";
+            });
+
+           services.ConfigureApplicationCookie (options => {
+                options.AccessDeniedPath = $"/a/access-denied";
+            });
         }
 
         public void Configure(IApplicationBuilder app)
         {
-
-            // InitializeDatabase(app);
-
             if (Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
-            // uncomment if you want to add MVC
+            using (var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope()){
+                Log.Information("Begin seed database");
+                var connectionString = Configuration.GetConnectionString("DefaultConnection");
+                SeedData.EnsureSeedData(connectionString);
+                Log.Information("Done seeding database.");
+            }
+
+
             app.UseStaticFiles();
             app.UseRouting();
             app.UseIdentityServer();
 
-            // uncomment, if you want to add MVC
+            app.UseAuthentication();
             app.UseAuthorization();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapDefaultControllerRoute();
             });
-        }
-
-        private void InitializeDatabase(IApplicationBuilder app)
-        {
-            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
-            {
-                serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
-
-                var context = serviceScope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
-                context.Database.Migrate();
-                if (!context.Clients.Any())
-                {
-                    // foreach (var client in Config.Clients)
-                    // {
-                    //     context.Clients.Add(client.ToEntity());
-                    // }
-                    // context.SaveChanges();
-                }
-
-                if (!context.IdentityResources.Any())
-                {
-                    // foreach (var resource in Config.IdentityResources)
-                    // {
-                    //     context.IdentityResources.Add(resource.ToEntity());
-                    // }
-                    // context.SaveChanges();
-                }
-
-                if (!context.ApiScopes.Any())
-                {
-                    // foreach (var resource in Config.ApiScopes)
-                    // {
-                    //     context.ApiScopes.Add(resource.ToEntity());
-                    // }
-                    // context.SaveChanges();
-                }
-            }
         }
     }
 }

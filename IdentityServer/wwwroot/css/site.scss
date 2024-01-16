@@ -3,7 +3,13 @@
     padding-bottom:40px;
 }
 
-.welcome-page {
+.form-group{
+    .control-label{
+        font-weight: 500;
+    }
+}
+
+.welcome-page{
     li {
         list-style: none;
         padding: 4px;
@@ -39,4 +45,47 @@
     }
 }
 
+
+.page-container{
+    display: flex;
+
+    .master-menu{
+        width: 220px;
+        padding: 16px 4px;
+
+        li{
+
+            &:hover{
+                background-color: #eee;
+            }
+
+            a{
+                padding: 8px 16px;
+                font-weight: 500;
+                text-decoration: none;
+                color: #666;
+            }
+        } 
+    }
+
+    .page-body{
+        height: 100%;
+        flex: 1;
+        padding: 0 16px;
+        overflow: auto;
+    }
+}
+
+html{
+    overflow: hidden;
+}
+
+table td{
+    border-top: none !important;
+}
+
+@import 'layout/layout.scss';
+@import 'account/layout.scss';
+@import 'portal/layout.scss';
+@import 'admin/layout.scss';
 

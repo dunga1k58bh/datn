@@ -4,7 +4,6 @@
 
 using IdentityServer4;
 using IdentityServer4.Models;
-using System;
 using System.Collections.Generic;
 
 namespace IdentityServer
@@ -12,7 +11,7 @@ namespace IdentityServer
     public static class Config
     {
         public static IEnumerable<IdentityResource> IdentityResources =>
-            new List<IdentityResource>
+            new IdentityResource[]
             {
                 new IdentityResources.OpenId(),
                 new IdentityResources.Profile(),
@@ -21,52 +20,13 @@ namespace IdentityServer
         public static IEnumerable<ApiScope> ApiScopes =>
             new ApiScope[]
             {
-                new ApiScope("api1", "My API")
+                new ApiScope("api1"),
             };
 
         public static IEnumerable<Client> Clients =>
-            new Client[] 
+            new Client[]
             {
-                new Client{
-                    ClientId = "admin",
-                    ClientName = "Identity Admin",
-                    ClientSecrets = 
-                    {
-                        new Secret("secret".Sha256())
-                    },
-
-                    AllowedGrantTypes = GrantTypes.Code,
-
-                    RedirectUris = {"https://localhost:7144/signin-oidc",},
-
-                    PostLogoutRedirectUris = { "https://localhost:7144/signout-callback-oidc"},
-
-                    AllowedScopes = new List<string>
-                    {
-                        IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile
-                    }
-                },
-                new Client{
-                    ClientId = "adminsite",
-                    ClientName = "Admin site",
-                    ClientSecrets = 
-                    {
-                        new Secret("secret".Sha256())
-                    },
-
-                    AllowedGrantTypes = GrantTypes.Code,
-
-                    RedirectUris = {"https://localhost:5075/signin-oidc",},
-
-                    PostLogoutRedirectUris = { "https://localhost:5075/signout-callback-oidc"},
-
-                    AllowedScopes = new List<string>
-                    {
-                        IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile
-                    }
-                },
+                
             };
     }
 }

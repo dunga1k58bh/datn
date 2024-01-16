@@ -1,0 +1,54 @@
+@model PaginatedListViewModel<IdentityServer4.EntityFramework.Entities.ApiScope>
+
+<div class="page-header">
+    <h4>Api scopes</h4>
+    <div class="header-side">
+        <a asp-action="Create" class="btn btn-primary" >Create API scope</a>
+    </div>
+</div>
+
+<table class="table my-table">
+    <thead>
+        <tr>
+            <th>
+                Scope name
+            </th>
+            <!-- Add other headers as needed -->
+            <th>Status</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Items)
+        {
+            <tr class="table-item js-item">
+                <td>
+                    <div class="item-checkbox">
+                        <input class="form-check-input" type="checkbox" name="ClientIds" value="@item.Id" 
+                            id="role_@item.Id" />
+                    </div>
+                    <div class="name">@Html.DisplayFor(modelItem => item.DisplayName)</div>
+                </td>
+                <!-- Add other columns as needed -->
+                <td>Active</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<nav aria-label="Page navigation" class="table-pagination">
+    <ul class="pagination">
+        @for (var i = 1; i <= Model.TotalPages; i++)
+        {
+            <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                <a class="page-link" href="?page=@i">@i</a>
+            </li>
+        }
+    </ul>
+</nav>
+
+<script src="~/js/table/table.js"></script>

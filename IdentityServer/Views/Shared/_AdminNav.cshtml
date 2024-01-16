@@ -1,0 +1,32 @@
+@using IdentityServer4.Extensions
+
+@{
+    string name = null;
+    if (!true.Equals(ViewData["signed-out"]))
+    {
+        name = Context.User?.GetDisplayName();
+    }
+}
+
+<div class="nav-page">
+    <nav class="navbar navbar-light">
+
+        <a href="~/" class="navbar-brand">
+            <img src="~/icon.png" class="icon-banner">
+            Identity Hub
+        </a>
+
+        @if (!string.IsNullOrWhiteSpace(name))
+        {
+            <div class="btn-dd">
+                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">@name <b class="caret"></b></a>
+                
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="/a/logout">Logout</a>
+                    <a class="dropdown-item" href="/a/login">Go to portal</a>
+                </div>
+            </div>
+        }
+    
+    </nav>
+</div>

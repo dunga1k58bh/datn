@@ -1,0 +1,72 @@
+@model ClientDetailsViewModel
+
+<h5 class="mt-2">OpenID Connect Configuration</h5>
+<div>To learn more about this configuration, including restricting access to specific users, please visit</div>
+<a href='https://jumpcloud.com/support/sso-with-oidc'>Single Sign On (SSO) with OpenID Connect (OIDC).</a>
+
+<h5 class="mt-2">Endpoint Configuration</h5>
+
+<div class="form-group">
+    <label class='control-label'>Grant type</label>
+    <div class="form-check">
+        <input asp-for="Client.AllowOfflineAccess" class="form-check-input" />
+        <label asp-for="Client.AllowOfflineAccess" class="form-check-label">Refresh token</label>
+    </div>
+    <span asp-validation-for="Client.AllowOfflineAccess" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="Client.ClientId" class="control-label">Client ID</label>
+    <div class="input-group">
+        <input asp-for="Client.ClientId" class="form-control" readonly />
+        <div class="input-group-append">
+            <button type="button" class="btn btn-secondary" onclick="copyToClipboard()">Copy</button>
+        </div>
+    </div>
+    <span asp-validation-for="Client.ClientId" class="text-danger"></span>
+    <p class="text-muted">The client ID of the application registered in the third-party OIDC identity provider.</p>
+</div>
+
+<div class="alert alert-success" role="alert" id="copySuccessAlert" style="display: none;">
+    Copied successfully!
+</div>
+
+<div class="form-group">
+    <label asp-for="Client.ClientId" class="control-label">Client ID</label>
+    <div class="input-group">
+        <input value="***********" class="form-control" readonly />
+        <div class="input-group-append">
+            <button type="button" class="btn btn-secondary" onclick="generateClientSecret('@Model.Client.Id')">Regenerate</button>
+        </div>
+    </div>
+    <span asp-validation-for="Client.ClientId" class="text-danger"></span>
+    <p class="text-muted">The client secret of the application registered in the third-party OIDC identity provider.</p>
+</div>
+
+<div class="form-group">
+    <label asp-for="RedirectUris" class="control-label">Redirect URIs</label>
+    
+    <div id="redirectUriContainer">
+       @for (var i = 0; i < Model.RedirectUris.Count; i++)
+        {
+            <div class="input-group mt-1">
+                <input asp-for="RedirectUris[i]" class="form-control" placeholder="Enter Redirect URI" />
+                @if (i > 0)
+                {
+                    <div class="input-group-append">
+                        <button type="button" class="btn btn-danger" onclick="removeRedirectField(@i)">Remove</button>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <button type="button" class="btn btn-primary mt-2" onclick="addRedirectField()">Add Redirect URI</button>
+</div>
+
+<h5 class="mt-2">Attribute Mapping (optional)</h5>
+<div>If attributes are required by either, this Service Provider or the selected scopes for SSO authentication, they are not editable. Additional attributes may be included in assertions, although support for each attribute will vary for each Service Provider.</div>
+
+
+<h5 class="mt-2">User Consent</h5>
+<div>This application defaults to automatically consenting on behalf of users. Users will not be prompted to provide consent.</div>
