@@ -29,8 +29,10 @@ namespace IdentityServer.Models{
 
         // Add any additional properties you need for user creation
         [Display(Name = "First Name")]
+        [Required]
         public string FirstName { get; set; }
 
+        [Required]
         [Display(Name = "Last Name")]
         public string LastName { get; set; }
 

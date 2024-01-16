@@ -11,6 +11,8 @@ using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
 using System;
 using System.Linq;
+using Azure;
+using Azure.Communication.Email;
 
 namespace IdentityServer
 {

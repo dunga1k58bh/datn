@@ -15,17 +15,17 @@ builder.Services.AddAuthentication(options =>
     .AddCookie("Cookies")
     .AddOpenIdConnect("oidc", options =>
     {
-         options.Authority = "https://localhost:5001";
+        options.Authority = "https://localhost:5001";
 
-        options.ClientId = "client_1a0144e2";
-        options.ClientSecret = "Zz3bEBexcCy-nOVtpv4nWiQXtoVG~0ALVSs2yzgeNGQ4366oMYYeNSP-8";
+        options.ClientId = "client_b84252e2";
+        options.ClientSecret = "zN68sM2bIlloa7ynKqtqc2fmmS9I~-LwcyZTCPEDSGQ4J66oMYYeNSP-8";
         options.ResponseType = "code";
-        options.GetClaimsFromUserInfoEndpoint = true;
         options.SaveTokens = true;
 
         options.Scope.Add("profile");
         options.Scope.Add("openid");
-        options.Scope.Add("offline_access");
+
+        options.GetClaimsFromUserInfoEndpoint = true;
     });
 
 var app = builder.Build();

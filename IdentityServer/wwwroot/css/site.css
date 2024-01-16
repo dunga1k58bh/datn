@@ -54,6 +54,15 @@
   height: 100%;
   flex: 1;
   padding: 0 16px;
+  overflow: auto;
+}
+
+html {
+  overflow: hidden;
+}
+
+table td {
+  border-top: none !important;
 }
 
 .nav-page {
@@ -158,6 +167,10 @@ html, body {
   right: 20px;
 }
 
+.table-pagination {
+  margin-left: 30px;
+}
+
 .page-header {
   padding-top: 16px;
   display: flex;
@@ -221,4 +234,5 @@ html, body {
 }
 .admin-container .page-body .page-section {
   padding: 20px 40px;
+  margin-top: 16px;
 }/*# sourceMappingURL=site.css.map */

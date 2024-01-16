@@ -8,9 +8,12 @@ using IdentityServer.Data;
 using System.Collections.Generic;
 using System.Security.Claims;
 using IdentityModel;
+using System;
+using Microsoft.AspNetCore.Authorization;
 
 
 [Route("users")]
+[Authorize(Roles = "admin")]
 public class UserController : Controller
 {
     private readonly ApplicationDbContext _context;
@@ -25,10 +28,17 @@ public class UserController : Controller
         _roleManager = roleManager;
     }
 
-    // GET: Users list
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int page = 1, int pageSize = 10)
     {
-        var users = await _userManager.Users.ToListAsync();
+        // Assuming _context is your DbContext
+        var totalItems = _context.Users.Count();
+        
+        var users = _context.Users
+            .OrderBy(c => c.Id)  // Order by a property to ensure consistent results
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
         var view_users = new List<UserWithClaimnsModel>();
         foreach (var user in users){
 
@@ -45,12 +55,14 @@ public class UserController : Controller
             view_users.Add(userWithClaimnsModel);
         }
 
-
-        var vm = new UserListViewModel(){
-            users = view_users
+        var model = new PaginatedListViewModel<UserWithClaimnsModel>
+        {
+            Items = view_users,
+            PageIndex = page,
+            TotalPages = (int)Math.Ceiling((double)totalItems / pageSize)
         };
 
-        return View(vm);
+        return View(model);
     }
 
     // GET: User/Create

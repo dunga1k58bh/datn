@@ -75,6 +75,7 @@ namespace IdentityServerHost.Quickstart.UI
                 }
             };
 
+            props.Items.Add("prompt", "login"); // This prompts the user to log in again
             return Challenge(props, scheme);
             
         }
@@ -106,6 +107,7 @@ namespace IdentityServerHost.Quickstart.UI
                 // in this sample we don't show how that would be done, as our sample implementation
                 // simply auto-provisions new external user
                 // user = AutoProvisionUser(provider, providerUserId, claims);
+                return RedirectToAction("AccessDenied", "Account");
             }
 
             // this allows us to collect any additional claims or properties
@@ -171,6 +173,9 @@ namespace IdentityServerHost.Quickstart.UI
 
             // find external user
             var user = await _userManager.FindByEmailAsync(userEmailClaim.Value);
+            if (user == null){
+                throw new Exception("You don't have an account yet!");
+            }
 
             return (user, provider, providerUserId, claims);
         }

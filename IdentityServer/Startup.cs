@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Serilog;
 
 
 namespace IdentityServer
@@ -65,6 +66,11 @@ namespace IdentityServer
                 {
                     options.ConfigureDbContext = b => b.UseSqlServer(connectionString,
                         sql => sql.MigrationsAssembly(migrationsAssembly));
+
+                    // this enables automatic token cleanup. this is optional.
+                    // options.EnableTokenCleanup = true;
+                    // options.TokenCleanupInterval = 30; // interval in seconds
+
                 })
                 .AddAspNetIdentity<ApplicationUser>();
 
@@ -79,16 +85,16 @@ namespace IdentityServer
             builder.AddDeveloperSigningCredential();
 
             services.AddAuthentication()
-                .AddGoogle(options =>
-                {
-                    options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+            .AddGoogle(options =>
+            {
+                options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                options.ClientId = "26833223181-04jn7o50ha6a4qj88k635e9780gdp30k.apps.googleusercontent.com";
+                options.ClientSecret = "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";
+            });
 
-                    // register your IdentityServer with Google at https://console.developers.google.com
-                    // enable the Google+ API
-                    // set the redirect URI to https://localhost:5001/signin-google
-                    options.ClientId = "26833223181-04jn7o50ha6a4qj88k635e9780gdp30k.apps.googleusercontent.com";
-                    options.ClientSecret = "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";
-                });
+           services.ConfigureApplicationCookie (options => {
+                options.AccessDeniedPath = $"/a/access-denied";
+            });
         }
 
         public void Configure(IApplicationBuilder app)
@@ -98,11 +104,21 @@ namespace IdentityServer
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseStaticFiles();
+            using (var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope()){
+                Log.Information("Begin seed database");
+                var connectionString = Configuration.GetConnectionString("DefaultConnection");
+                SeedData.EnsureSeedData(connectionString);
+                Log.Information("Done seeding database.");
+            }
 
+
+            app.UseStaticFiles();
             app.UseRouting();
             app.UseIdentityServer();
+
+            app.UseAuthentication();
             app.UseAuthorization();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapDefaultControllerRoute();

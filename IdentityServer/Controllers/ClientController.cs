@@ -5,45 +5,55 @@ using System.Text;
 using System.Threading.Tasks;
 using IdentityServer.Data;
 using IdentityServer.Models;
-using IdentityServer4;
+using IdentityServer4.EntityFramework.Mappers;
 using IdentityServer4.EntityFramework.Entities;
-using IdentityServer4.Models;
+using IdentityServer4.Stores;
 using IdentityServerHost.Quickstart.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using NuGet.Packaging.Signing;
 
 
 [Route("clients")]
 [SecurityHeaders]
-[Authorize]
+[Authorize(Roles = "admin")]
 public class ClientController : Controller
 {
     private readonly ApplicationDbContext _context;
+    private readonly IClientStore _clients;
 
-    public ClientController(ApplicationDbContext context)
+    public ClientController(ApplicationDbContext context, IClientStore clients)
     {
         _context = context;
+        _clients = clients;
     }
 
     // GET: Client
-    public IActionResult Index()
+    public IActionResult Index(int page = 1, int pageSize = 10)
     {
-        var clients = _context.Clients.ToList();
-        return View(clients);
+        // Assuming _context is your DbContext
+        var totalItems = _context.Clients.Count();
+        
+        var clients = _context.Clients
+            .OrderBy(c => c.Id)  // Order by a property to ensure consistent results
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        var model = new PaginatedListViewModel<Client>
+        {
+            Items = clients,
+            PageIndex = page,
+            TotalPages = (int)Math.Ceiling((double)totalItems / pageSize)
+        };
+
+        return View(model);
     }
 
     [Route("details")]
-    public IActionResult Details(int? id){
+    public async Task<IActionResult> Details(int id){
 
-        if (id == null)
-        {
-            return NotFound();
-        }
-
-        var client = _context.Clients.FirstOrDefault(c => c.Id == id);
+        var client = await _context.Clients.FindAsync(id);
 
         if (client != null)
         {
@@ -85,40 +95,30 @@ public class ClientController : Controller
         if (ModelState.IsValid){
 
             var clientId = GenerateClientId();
-            var client = new IdentityServer4.EntityFramework.Entities.Client{
+            var client = new IdentityServer4.Models.Client{
                 ClientName = vm.ClientName,
                 Description = vm.ClientDescription,
                 ClientId = clientId,
+                ClientUri = vm.ClientUri,
+                BackChannelLogoutUri = vm.ClientUri + "/signout-oidc",
+                FrontChannelLogoutUri = vm.ClientUri + "/signout-callback-oidc",
+                AllowedGrantTypes = IdentityServer4.Models.GrantTypes.Code,
+                AllowedScopes = {
+                    "openid",
+                    "profile",
+                },
+                ClientSecrets = { new IdentityServer4.Models.Secret(IdentityServer4.Models.HashExtensions.Sha256(generateClientSecret()))},
+                RedirectUris = {vm.ClientUri + "/signin-oidc"}
             };
 
-            await _context.Clients.AddAsync(client);
+            var client_entity = client.ToEntity();
+            await _context.Clients.AddAsync(client_entity);
             await _context.SaveChangesAsync();
 
-            //Add client grant type default
-            var clientGrantType = new ClientGrantType{
-                ClientId = client.Id,
-                GrantType = GrantType.AuthorizationCode
-            };
-            await _context.ClientGrantTypes.AddAsync(clientGrantType);
-
-
-            //Add client default Scope
-            var openId = new ClientScope{
-                ClientId = client.Id,
-                Scope = IdentityServerConstants.StandardScopes.OpenId,
-            };
-
-            var profile = new ClientScope{
-                ClientId = client.Id,
-                Scope = IdentityServerConstants.StandardScopes.Profile,
-            };
-
-            await _context.ClientScopes.AddAsync(openId);
-            await _context.ClientScopes.AddAsync(profile);
-
+            //Save change
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("Index");
+            return RedirectToAction("Details", new {id = client_entity.Id});
         }
         
 
@@ -264,7 +264,7 @@ public class ClientController : Controller
         var Secret = new ClientSecret()
         {
             ClientId = ClientId,
-            Value = newClientSecret.Sha256()
+            Value = IdentityServer4.Models.HashExtensions.Sha256(newClientSecret)
         };
 
         _context.ClientSecrets.Add(Secret);
@@ -295,9 +295,9 @@ public class ClientController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        var client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == id);
+        var client = await _context.Clients.FindAsync(id);
         _context.Clients.Remove(client);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
         
         return RedirectToAction(nameof(Index));
     }

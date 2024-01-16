@@ -34,8 +34,8 @@ namespace IdentityServer.Data
         public DbSet<IdentityResource> IdentityResources {get; set; }
         public DbSet<IdentityResourceClaim> IdentityResourceClaims {get; set; }
         public DbSet<IdentityResourceProperty> IdentityResourceProperties {get; set; }
-        public DbSet<PersistedGrant> PersistedGrants {get; set; }
-
+        public DbSet<PersistedGrant> PersistedGrants {get; set;}
+        public DbSet<DeviceFlowCodes> DeviceCodes { get; set; }
         //Custom model
         public DbSet<RoleClientGrant> RoleClientGrants {get; set; }
 
@@ -54,6 +54,9 @@ namespace IdentityServer.Data
 
             builder.Entity<PersistedGrant>()
             .HasKey(p => p.Key);
+
+            builder.Entity<DeviceFlowCodes>()
+            .HasKey(p => p.DeviceCode);
         }
 
 

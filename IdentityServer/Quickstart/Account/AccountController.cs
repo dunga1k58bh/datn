@@ -17,6 +17,12 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using IdentityServer4;
+using System.Security.Claims;
+using System.Net.Mail;
+using System.Net;
+using Azure.Communication.Email;
+using Azure;
 
 namespace IdentityServerHost.Quickstart.UI
 {
@@ -107,11 +113,34 @@ namespace IdentityServerHost.Quickstart.UI
 
             if (ModelState.IsValid)
             {
-                var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberLogin, lockoutOnFailure: true);
-                if (result.Succeeded)
+                var user = await _userManager.FindByNameAsync(model.Username);
+
+                if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
                 {
-                    var user = await _userManager.FindByNameAsync(model.Username);
                     await _events.RaiseAsync(new UserLoginSuccessEvent(user.UserName, user.Id, user.UserName, clientId: context?.Client.ClientId));
+
+                    // only set explicit expiration here if user chooses "remember me". 
+                    // otherwise we rely upon expiration configured in cookie middleware.
+                    AuthenticationProperties props = null;
+                    if (AccountOptions.AllowRememberLogin && model.RememberLogin)
+                    {
+                        props = new AuthenticationProperties
+                        {
+                            IsPersistent = true,
+                            ExpiresUtc = DateTimeOffset.UtcNow.Add(AccountOptions.RememberMeLoginDuration)
+                        };
+                    };
+
+                    var userRoles = await _userManager.GetRolesAsync(user);
+
+                    // Create an IdentityServerUser instance and include user roles as claims
+                    var isuser = new IdentityServerUser(user.Id)
+                    {
+                        DisplayName = user.UserName,
+                        AdditionalClaims = userRoles.Select(role => new Claim("role", role)).ToList()
+                    };
+
+                    await HttpContext.SignInAsync(isuser, props);
 
                     if (context != null)
                     {
@@ -178,6 +207,9 @@ namespace IdentityServerHost.Quickstart.UI
         public async Task<IActionResult> LoginAdmin(string returnUrl)
         {
             // build a model so we know what to show on the login page
+            if (returnUrl == null){
+                returnUrl = "/users";
+            }
             var vm = await BuildLoginViewModelAsync(returnUrl);
 
             if (vm.IsExternalLoginOnly)
@@ -230,11 +262,34 @@ namespace IdentityServerHost.Quickstart.UI
 
             if (ModelState.IsValid)
             {
-                var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberLogin, lockoutOnFailure: true);
-                if (result.Succeeded)
+                var user = await _userManager.FindByNameAsync(model.Username);
+
+                if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
                 {
-                    var user = await _userManager.FindByNameAsync(model.Username);
                     await _events.RaiseAsync(new UserLoginSuccessEvent(user.UserName, user.Id, user.UserName, clientId: context?.Client.ClientId));
+
+                    // only set explicit expiration here if user chooses "remember me". 
+                    // otherwise we rely upon expiration configured in cookie middleware.
+                    AuthenticationProperties props = null;
+                    if (AccountOptions.AllowRememberLogin && model.RememberLogin)
+                    {
+                        props = new AuthenticationProperties
+                        {
+                            IsPersistent = true,
+                            ExpiresUtc = DateTimeOffset.UtcNow.Add(AccountOptions.RememberMeLoginDuration)
+                        };
+                    };
+
+                     var userRoles = await _userManager.GetRolesAsync(user);
+
+                    // Create an IdentityServerUser instance and include user roles as claims
+                    var isuser = new IdentityServerUser(user.Id)
+                    {
+                        DisplayName = user.UserName,
+                        AdditionalClaims = userRoles.Select(role => new Claim("role", role)).ToList()
+                    };
+
+                    await HttpContext.SignInAsync(isuser, props);
 
                     if (context != null)
                     {
@@ -313,6 +368,7 @@ namespace IdentityServerHost.Quickstart.UI
         }
 
         [HttpGet]
+        [Route("access-denied")]
         public IActionResult AccessDenied()
         {
             return View();
@@ -448,6 +504,136 @@ namespace IdentityServerHost.Quickstart.UI
             }
 
             return vm;
+        }
+
+        [HttpGet]
+        [Route("resetpwd")]
+        public IActionResult ResetPassword(string userId, string code)
+        {
+            var vm = new ResetPasswordViewModel();
+            return View(vm);
+        }
+
+
+        [HttpPost]
+        [Route("resetpwd")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel vm)
+        {
+            if (ModelState.IsValid){
+
+                var email = vm.Email;
+                var user = await _userManager.FindByEmailAsync(email);
+
+                if (user == null)
+                {
+                    // User not found, handle appropriately (e.g., show error message)
+                    ModelState.AddModelError(string.Empty, "User not found.");
+                    return View(vm);
+                }
+
+                 // Generate a password reset token
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+                // Construct the callback URL for password reset
+                var callbackUrl = Url.Action("DoResetPassword", "Account", new { userId = user.Id, code = token }, protocol: HttpContext.Request.Scheme);
+
+                // Send the reset password link via email (you need to implement this method)
+                await SendResetPasswordEmail(user.Email, callbackUrl);
+
+                return View(vm);
+            }
+
+            return View(vm);
+        }
+
+
+        private async Task SendResetPasswordEmail(string userEmail, string callbackUrl)
+        {
+            try
+            {
+                var key = new AzureKeyCredential("nrkXEGnmpowErx1Z6bOFHQzk9W8cF8CW/FRGLb2vdVoJ/Rkdo8WeobaP87UIQbDggUFNt3YdSlivCobofdoauQ==");
+                var endPoint = new Uri("https://identityserver22.unitedstates.communication.azure.com/");
+                EmailClient emailClient = new EmailClient(endPoint, key);
+                var sender = "donotreply@585e1821-693b-4ff1-ab78-c87fae8aedae.azurecomm.net";
+                var recipient = userEmail;
+
+                var subject = "Reset your password";
+                var htmlContent = $"<p>Please reset your password by clicking <a href='{callbackUrl}'>here</a>.</p>";
+
+                Console.WriteLine("Sending email...");
+                EmailSendOperation emailSendOperation = await emailClient.SendAsync(
+                    Azure.WaitUntil.Completed,
+                    sender,
+                    recipient,
+                    subject,
+                    htmlContent);
+                EmailSendResult statusMonitor = emailSendOperation.Value;
+                
+                Console.WriteLine($"Email Sent. Status = {emailSendOperation.Value.Status}");
+
+                /// Get the OperationId so that it can be used for tracking the message for troubleshooting
+                string operationId = emailSendOperation.Id;
+                Console.WriteLine($"Email operation id = {operationId}");
+            }
+            catch (RequestFailedException ex)
+            {
+                /// OperationID is contained in the exception message and can be used for troubleshooting purposes
+                Console.WriteLine($"Email send operation failed with error code: {ex.ErrorCode}, message: {ex.Message}");
+            }
+        }
+
+
+        [HttpGet]
+        [Route("doresetpwd")]
+        public IActionResult DoResetPassword(string userId, string code)
+        {
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(code))
+            {
+                // Handle invalid or missing parameters
+                return BadRequest("Invalid reset password link.");
+            }
+
+            var user = _userManager.FindByIdAsync(userId).Result;
+
+            var model = new DoResetPasswordViewModel
+            {
+                UserId = user.Id,
+                User = user,
+                Code = code
+            };
+
+            return View(model); // Assuming you have a ResetPassword view
+        }
+
+
+        [HttpPost]
+        [Route("doresetpwd")]
+        public async Task<IActionResult> DoResetPassword(DoResetPasswordViewModel vm)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.FindByIdAsync(vm.UserId);
+
+                if (user == null)
+                {
+                    // Handle invalid user
+                    return BadRequest("Invalid user.");
+                }
+
+                var result = await _userManager.ResetPasswordAsync(user, vm.Code, vm.Password);
+
+                if (result.Succeeded)
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+                else
+                {
+                    ModelState.AddModelError(String.Empty, "The code is expried, try again");
+                }
+            }
+
+            // ModelState is not valid, return validation errors
+            return View(vm);
         }
     }
 }

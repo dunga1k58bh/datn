@@ -1,4 +1,4 @@
-@model UserListViewModel
+@model PaginatedListViewModel<UserWithClaimnsModel>
 
 <div class="page-header">
     <h4>Users</h4>
@@ -20,7 +20,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model.users)
+        @foreach (var item in Model.Items)
         {
             <tr class="table-item js-item">
                 <td>
@@ -40,5 +40,16 @@
         }
     </tbody>
 </table>
+
+<nav aria-label="Page navigation" class="table-pagination">
+    <ul class="pagination">
+        @for (var i = 1; i <= Model.TotalPages; i++)
+        {
+            <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                <a class="page-link" href="?page=@i">@i</a>
+            </li>
+        }
+    </ul>
+</nav>
 
 <script src="~/js/table/table.js"></script>

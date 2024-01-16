@@ -1,0 +1,36 @@
+@model ApiScopeCreateViewModel
+
+<div class="page-header">
+    <h4>Create api scope</h4>
+</div>
+
+<div class="page-section fs-14">
+
+    <form asp-action="Create" method="post">
+
+        <div class='form-group'>
+            <label asp-for='DisplayName' class='control-label'>Display name</label>
+            <input asp-for='DisplayName' class='form-control' />
+            <span asp-validation-for='DisplayName' class='text-danger'></span>
+        </div>
+
+        <div class='form-group'>
+            <label asp-for='Name' class='control-label'>Api key</label>
+            <input asp-for='Name' class='form-control' />
+            <span asp-validation-for='Name' class='text-danger'></span>
+        </div>
+
+
+        <div class='form-group'>
+            <label asp-for='Description' class='control-label'>Description</label>
+            <textarea asp-for="Description" class="form-control"></textarea>
+            <span asp-validation-for='Description' class='text-danger'></span>
+        </div>
+
+        <div class="form-group text-right">
+            <a asp-action="Index" class="mr-2">Back </a>
+            <input type="submit" value="Save" class="btn btn-primary" />
+        </div>
+
+    </form>
+</div>
