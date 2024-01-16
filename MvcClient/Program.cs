@@ -15,10 +15,9 @@ builder.Services.AddAuthentication(options =>
     .AddCookie("Cookies")
     .AddOpenIdConnect("oidc", options =>
     {
-        options.Authority = "https://localhost:5001";
-
-        options.ClientId = "client_b84252e2";
-        options.ClientSecret = "zN68sM2bIlloa7ynKqtqc2fmmS9I~-LwcyZTCPEDSGQ4J66oMYYeNSP-8";
+        options.Authority = "https://identityserver22.azurewebsites.net/";
+        options.ClientId = "client_bf322108";
+        options.ClientSecret = "dDs9vbY-e7R~Ra0OaLoJANRAeV1j~Pq9kmmzmSQmRGQ4r66oMYYeNSP-8";
         options.ResponseType = "code";
         options.SaveTokens = true;
 

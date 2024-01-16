@@ -92,20 +92,20 @@ public class ApiScopeController : Controller
     }
 
 
-    // POST: Role/Edit/5
-    [HttpPost]
-    [Route("details")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Details(ClientDetailsViewModel vm)
-    {
-        if (ModelState.IsValid)
-        {
-        
-        }
+    // // POST: ApiScope/Edit/5
+    // [HttpPost]
+    // [Route("details")]
+    // [ValidateAntiForgeryToken]
+    // public async Task<IActionResult> Details(ClientDetailsViewModel vm)
+    // {
+    //     if (ModelState.IsValid)
+    //     {
+    //         var role = _role
+    //     }
 
-        // If ModelState is not valid, return to the edit view with the ViewModel
-        return View(vm);
-    }
+    //     // If ModelState is not valid, return to the edit view with the ViewModel
+    //     return View(vm);
+    // }
 
 
     // GET: User/Delete/5

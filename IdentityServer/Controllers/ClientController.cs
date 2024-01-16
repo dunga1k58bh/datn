@@ -100,8 +100,8 @@ public class ClientController : Controller
                 Description = vm.ClientDescription,
                 ClientId = clientId,
                 ClientUri = vm.ClientUri,
-                BackChannelLogoutUri = vm.ClientUri + "/signout-oidc",
-                FrontChannelLogoutUri = vm.ClientUri + "/signout-callback-oidc",
+                BackChannelLogoutUri = vm.ClientUri + "/signout-callback-oidc",
+                FrontChannelLogoutUri = vm.ClientUri + "/signout-oidc",
                 AllowedGrantTypes = IdentityServer4.Models.GrantTypes.Code,
                 AllowedScopes = {
                     "openid",
